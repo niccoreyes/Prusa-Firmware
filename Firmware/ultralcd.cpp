@@ -1091,10 +1091,10 @@ void lcd_commands()
 		if (lcd_commands_step == 10 && !blocks_queued() && cmd_buffer_empty())
 		{
 			enquecommand_P(PSTR("M107"));
-			enquecommand_P(PSTR("M104 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
-			enquecommand_P(PSTR("M140 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-			enquecommand_P(PSTR("M190 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-			enquecommand_P(PSTR("M109 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
+			enquecommand_P(PSTR("M104 S" STRINGIFY(MY_PREHEAT_HOTEND_TEMP)));
+			enquecommand_P(PSTR("M140 S" STRINGIFY(MY_PREHEAT_HPB_TEMP)));
+			enquecommand_P(PSTR("M190 S" STRINGIFY(MY_PREHEAT_HPB_TEMP)));
+			enquecommand_P(PSTR("M109 S" STRINGIFY(MY_PREHEAT_HOTEND_TEMP)));
 			enquecommand_P(PSTR("T0"));
 			enquecommand_P(_T(MSG_M117_V2_CALIBRATION));
 			enquecommand_P(PSTR("G87")); //sets calibration status
@@ -1383,10 +1383,10 @@ void lcd_commands()
 		if (lcd_commands_step == 10)
 		{
 			enquecommand_P(PSTR("M107"));
-			enquecommand_P(PSTR("M104 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
-			enquecommand_P(PSTR("M140 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-			enquecommand_P(PSTR("M190 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-            enquecommand_P(PSTR("M109 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
+			enquecommand_P(PSTR("M104 S" STRINGIFY(MY_PREHEAT_HOTEND_TEMP)));
+			enquecommand_P(PSTR("M140 S" STRINGIFY(MY_PREHEAT_HPB_TEMP)));
+			enquecommand_P(PSTR("M190 S" STRINGIFY(MY_PREHEAT_HPB_TEMP)));
+            enquecommand_P(PSTR("M109 S" STRINGIFY(MY_PREHEAT_HOTEND_TEMP)));
 			enquecommand_P(_T(MSG_M117_V2_CALIBRATION));
 			enquecommand_P(PSTR("G28"));
 			enquecommand_P(PSTR("G92 E0.0"));
@@ -1875,10 +1875,10 @@ void lcd_preheat_farm_nozzle()
 	setWatch(); // heater sanity check timer
 }
 
-void lcd_preheat_pla()
+void lcd_preheat_my()
 {
-  setTargetHotend0(PLA_PREHEAT_HOTEND_TEMP);
-  if (!wizard_active) setTargetBed(PLA_PREHEAT_HPB_TEMP);
+  setTargetHotend0(MY_PREHEAT_HOTEND_TEMP);
+  if (!wizard_active) setTargetBed(MY_PREHEAT_HPB_TEMP);
   fanSpeed = 0;
   lcd_return_to_status();
   setWatch(); // heater sanity check timer
@@ -1917,8 +1917,8 @@ void lcd_preheat_pet()
 
 void lcd_preheat_hips()
 {
-  setTargetHotend0(HIPS_PREHEAT_HOTEND_TEMP);
-  if (!wizard_active) setTargetBed(HIPS_PREHEAT_HPB_TEMP);
+  setTargetHotend0(PLA_PREHEAT_HOTEND_TEMP);
+  if (!wizard_active) setTargetBed(PLA_PREHEAT_HPB_TEMP);
   fanSpeed = 0;
   lcd_return_to_status();
   setWatch(); // heater sanity check timer
@@ -2213,12 +2213,12 @@ static void lcd_preheat_menu()
 	  MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
 	  MENU_ITEM_FUNCTION_P(PSTR("ABS    -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)), lcd_preheat_abs);
   } else {
-	  MENU_ITEM_FUNCTION_P(PSTR("PLA  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)), lcd_preheat_pla);
-	  MENU_ITEM_FUNCTION_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)), lcd_preheat_pet);
+	  MENU_ITEM_FUNCTION_P(PSTR("CUSTOM  -  " STRINGIFY(MY_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(MY_PREHEAT_HPB_TEMP)), lcd_preheat_my);
 	  MENU_ITEM_FUNCTION_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)), lcd_preheat_abs);
-	  MENU_ITEM_FUNCTION_P(PSTR("HIPS -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)), lcd_preheat_hips);
-	  MENU_ITEM_FUNCTION_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)), lcd_preheat_pp);
-	  MENU_ITEM_FUNCTION_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)), lcd_preheat_flex);
+	  MENU_ITEM_FUNCTION_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)), lcd_preheat_pet);
+	  MENU_ITEM_FUNCTION_P(PSTR("PLA -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)), lcd_preheat_hips);
+	  /*MENU_ITEM_FUNCTION_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)), lcd_preheat_pp);
+	  MENU_ITEM_FUNCTION_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)), lcd_preheat_flex);*/
 	  if (!wizard_active) MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
   }
   
@@ -2646,7 +2646,7 @@ else {
 static void mFilamentItem_PLA()
 {
 bFilamentPreheatState=false;
-mFilamentItem(PLA_PREHEAT_HOTEND_TEMP,PLA_PREHEAT_HPB_TEMP);
+mFilamentItem(MY_PREHEAT_HOTEND_TEMP,MY_PREHEAT_HPB_TEMP);
 }
 
 static void mFilamentItem_PET()
@@ -2664,7 +2664,7 @@ mFilamentItem(ABS_PREHEAT_HOTEND_TEMP,ABS_PREHEAT_HPB_TEMP);
 static void mFilamentItem_HIPS()
 {
 bFilamentPreheatState=false;
-mFilamentItem(HIPS_PREHEAT_HOTEND_TEMP,HIPS_PREHEAT_HPB_TEMP);
+mFilamentItem(PLA_PREHEAT_HOTEND_TEMP,PLA_PREHEAT_HPB_TEMP);
 }
 
 static void mFilamentItem_PP()
@@ -2691,12 +2691,12 @@ void mFilamentMenu()
 {
 MENU_BEGIN();
 MENU_ITEM_FUNCTION_P(_T(MSG_MAIN),mFilamentBack);
-MENU_ITEM_SUBMENU_P(PSTR("PLA  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)),mFilamentItem_PLA);
-MENU_ITEM_SUBMENU_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)),mFilamentItem_PET);
+MENU_ITEM_SUBMENU_P(PSTR("CUSTOM  -  " STRINGIFY(MY_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(MY_PREHEAT_HPB_TEMP)), mFilamentItem_PLA);
 MENU_ITEM_SUBMENU_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)),mFilamentItem_ABS);
-MENU_ITEM_SUBMENU_P(PSTR("HIPS -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)),mFilamentItem_HIPS);
-MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),mFilamentItem_PP);
-MENU_ITEM_SUBMENU_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),mFilamentItem_FLEX);
+MENU_ITEM_SUBMENU_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)),mFilamentItem_PET);
+MENU_ITEM_SUBMENU_P(PSTR("PLA -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)),mFilamentItem_HIPS);
+/*MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),mFilamentItem_PP);
+MENU_ITEM_SUBMENU_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),mFilamentItem_FLEX);*/
 MENU_END();
 }
 
@@ -3308,7 +3308,8 @@ static void _lcd_babystep(int axis, const char *msg)
 	if (lcd_draw_update)
 	{
 	    lcd_set_cursor(0, 1);
-		menu_draw_float13(msg, _md->babystepMemMM[axis]);
+		//menu_draw_float13(msg, _md->babystepMemMM[axis]);
+		menu_draw_float13(' ', msg, _md->babystepMemMM[axis]);
 	}
 	if (LCD_CLICKED || menu_leaving)
 	{
@@ -3324,7 +3325,8 @@ static void _lcd_babystep(int axis, const char *msg)
 
 static void lcd_babystep_z()
 {
-	_lcd_babystep(Z_AXIS, (_i("Adjusting Z:")));////MSG_BABYSTEPPING_Z c=15 Beware: must include the ':' as its last character
+	//_lcd_babystep(Z_AXIS, (_i("Adjusting Z: ")));////MSG_BABYSTEPPING_Z c=15 Beware: must include the ':' as its last character
+	_lcd_babystep(Z_AXIS, (_i("Adjusting Z")));////MSG_BABYSTEPPING_Z c=20
 }
 
 
@@ -5067,7 +5069,7 @@ void lcd_wizard(WizState state)
 			if (wizard_event) {
 				//current filament needs to be unloaded and then new filament should be loaded
 				//start to preheat nozzle for unloading remaining PLA filament
-				setTargetHotend(PLA_PREHEAT_HOTEND_TEMP, 0);
+				setTargetHotend(MY_PREHEAT_HOTEND_TEMP, 0);
 				lcd_display_message_fullscreen_P(_i("Now I will preheat nozzle for PLA."));
 				wait_preheat();
 				//unload current filament
@@ -5081,8 +5083,8 @@ void lcd_wizard(WizState state)
 			break;
 		case S::IsFil: //is filament loaded?
 				//start to preheat nozzle and bed to save some time later
-			setTargetHotend(PLA_PREHEAT_HOTEND_TEMP, 0);
-			setTargetBed(PLA_PREHEAT_HPB_TEMP);
+			setTargetHotend(MY_PREHEAT_HOTEND_TEMP, 0);
+			setTargetBed(MY_PREHEAT_HPB_TEMP);
 			if (mmu_enabled)
 			{
 			    wizard_event = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Is filament 1 loaded?"), false);////c=20 r=2

@@ -100,10 +100,11 @@ extern const char menu_fmt_float31[];
 extern const char menu_fmt_float13[];
 
 
-extern void menu_draw_float31(const char* str, float val);
+extern void menu_draw_float31(const char* str, float val); //original
+//extern void menu_draw_float31(char chr, const char* str, float val); //old
 
-extern void menu_draw_float13(const char* str, float val);
-
+//extern void menu_draw_float13(const char* str, float val);
+extern void menu_draw_float13(char chr, const char* str, float val);
 
 #define MENU_ITEM_EDIT_int3_P(str, pval, minval, maxval) do { if (menu_item_edit_P(str, pval, minval, maxval)) return; } while (0)
 //#define MENU_ITEM_EDIT_int3_P(str, pval, minval, maxval) MENU_ITEM_EDIT(int3, str, pval, minval, maxval)

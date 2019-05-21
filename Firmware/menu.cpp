@@ -308,7 +308,11 @@ const char menu_fmt_int3[] PROGMEM = "%c%.15S:%s%3d";
 
 const char menu_fmt_float31[] PROGMEM = "%-12.12S%+8.1f";
 
-const char menu_fmt_float13[] PROGMEM = "%-15.15S%+5.3f";
+//const char menu_fmt_float31[] PROGMEM = "%-12.12s%+8.1f";
+
+//const char menu_fmt_float13[] PROGMEM = "%-15.15S%+5.3f"; //ORIGINAL
+
+const char menu_fmt_float13[] PROGMEM = "%c%.12S:%s%+06.3f";
 
 const char menu_fmt_float13off[] PROGMEM = "%c%.12S:%s%";
 
@@ -358,8 +362,18 @@ void menu_draw_P<uint8_t*>(char chr, const char* str, int16_t val)
 //! The text needs to come with a colon ":", this function does not append it anymore.
 //! That resulted in a much shorter implementation (234628B -> 234476B)
 //! There are similar functions around which may be shortened in a similar way
+//void menu_draw_float31(char chr, const char* str, float val)
 void menu_draw_float31(const char* str, float val)
 {
+	/*uint8_t txtlen = strlen_P(str);
+	if (txtlen > 10)txtlen = 10;
+	char prerendered[21];
+	strcpy_P(prerendered, menu_20x_space);
+	prerendered[0] = chr;        // start with the initial byte/space for menu navigation
+	strncpy_P(prerendered + 1, str, 10); // render the text and limit it to max 10 characters
+	prerendered[txtlen + 1] = ':'; // put the colon behind it
+	prerendered[txtlen + 2] = 0;   // terminate the string to be used inside the printf
+	lcd_printf_P(menu_fmt_float31, prerendered, val);*/
 	lcd_printf_P(menu_fmt_float31, str, val);	
 }
 
@@ -373,9 +387,15 @@ void menu_draw_float31(const char* str, float val)
 //! (i.e. str must include a ':' at its end)
 //! FLASH usage dropped 234476B -> 234392B
 //! Moreover, this function gets inlined in the final code, so removing it doesn't really help ;)
-void menu_draw_float13(const char* str, float val)
+void menu_draw_float13(char chr, const char* str, float val)
 {
-	lcd_printf_P(menu_fmt_float13, str, val);
+	int text_len = strlen_P(str);
+	if (text_len > 12) text_len = 12;
+	char spaces[21];
+	strcpy_P(spaces, menu_20x_space);
+	spaces[12 - text_len] = 0;
+	lcd_printf_P(menu_fmt_float13, chr, str, spaces, val);
+	//lcd_printf_P(menu_fmt_float13, str, val);
 }
 
 template <typename T>
