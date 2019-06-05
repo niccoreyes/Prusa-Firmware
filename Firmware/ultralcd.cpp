@@ -41,7 +41,7 @@
 #include "static_assert.h"
 #include "io_atmega2560.h"
 
-
+bool lcd_variable_v2_cal_ispla = true;
 int scrollstuff = 0;
 char longFilenameOLD[LONG_FILENAME_LENGTH];
 
@@ -1344,7 +1344,7 @@ void lcd_commands()
 	{
 		char cmd1[30];
 		static uint8_t filament = 0;
-		float width = 0.4;
+		float width = V2_CAL_EXTRUSION_WIDTH;
 		float length = 20 - width;
 		float extr = count_e(0.2, width, length);
 		float extr_short_segment = count_e(0.2, width, width);
@@ -1383,10 +1383,20 @@ void lcd_commands()
 		if (lcd_commands_step == 10)
 		{
 			enquecommand_P(PSTR("M107"));
-			enquecommand_P(PSTR("M104 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
-			enquecommand_P(PSTR("M140 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-			enquecommand_P(PSTR("M190 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
-            enquecommand_P(PSTR("M109 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
+			if (lcd_variable_v2_cal_ispla) //HIPS IS PLA IN MY CONFIGURATION
+			{
+				enquecommand_P(PSTR("M104 S" STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP)));
+				enquecommand_P(PSTR("M140 S" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)));
+				enquecommand_P(PSTR("M190 S" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)));
+				enquecommand_P(PSTR("M109 S" STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP)));
+			}
+			else { //PLA is ABS IN MY CONFIG
+				enquecommand_P(PSTR("M104 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
+				enquecommand_P(PSTR("M140 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
+				enquecommand_P(PSTR("M190 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
+				enquecommand_P(PSTR("M109 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
+			}
+			
 			enquecommand_P(_T(MSG_M117_V2_CALIBRATION));
 			enquecommand_P(PSTR("G28"));
 			enquecommand_P(PSTR("G92 E0.0"));
@@ -4869,16 +4879,19 @@ void lcd_v2_calibration()
 		bool loaded = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Is PLA filament loaded?"), false, true);////MSG_PLA_FILAMENT_LOADED c=20 r=2
 		if (loaded) {
 			lcd_commands_type = LCD_COMMAND_V2_CAL;
+			lcd_variable_v2_cal_ispla = true; //GIVE THE USER TO CHOOSE FILAMENT PREFERENCE
 		}
 		else {
-			lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
+			/*lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
 			lcd_consume_click();
 			for (int i = 0; i < 20; i++) { //wait max. 2s
 				delay_keep_alive(100);
 				if (lcd_clicked()) {
 					break;
 				}
-			}
+			}*/
+			lcd_commands_type = LCD_COMMAND_V2_CAL;
+			lcd_variable_v2_cal_ispla = false; //FILAMENT PREFERENCE
 		}
 	}
 	lcd_return_to_status();
