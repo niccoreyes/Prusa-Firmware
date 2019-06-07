@@ -12,8 +12,8 @@
    * [FAQ](#5-faq)
 <!--te-->
 
-#What is this fork?
-##what
+# What is this fork?
+## what
 This is my take on the Prusa Firmware customized to my needs, I've recently added functions to cancel the print from octoprint using action commands such as `action:cancel` and `action:pause` in the menu
 I've added custom temperatures since I prefer printing in ABS than PLA, and my current nozzle size is 0.5mm. I changed the print temperatures for the V2 calibration too and maximized the bed level correction up to 125+- correction (can be up to 127mm I think, but is limited by int8 in eeprom)
 In the future, I will add custom commands & buttons from octoprint to set different Live Z (still waiting for prusa to update their firmware so as not to deviate too much from their standard)
