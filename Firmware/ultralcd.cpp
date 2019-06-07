@@ -6861,34 +6861,7 @@ void lcd_octoprint_off() {
 	SERIAL_PROTOCOLLN("");
 }
 void lcd_octoprint_stop() {
-	lcd_set_cursor(0, 0);
-	lcd_puts_P(_T(MSG_STOP_PRINT));
-	lcd_set_cursor(2, 2);
-	lcd_puts_P(_T(MSG_NO));
-	lcd_set_cursor(2, 3);
-	lcd_puts_P(_T(MSG_YES));
-	lcd_set_cursor(0, 2); lcd_print(" ");
-	lcd_set_cursor(0, 3); lcd_print(" ");
-
-	if ((int32_t)lcd_encoder > 2) { lcd_encoder = 2; }
-	if ((int32_t)lcd_encoder < 1) { lcd_encoder = 1; }
-
-	lcd_set_cursor(0, 1 + lcd_encoder);
-	lcd_print(">");
-
-	if (lcd_clicked())
-	{
-		if ((int32_t)lcd_encoder == 1)
-		{
-			lcd_return_to_status();
-		}
-		if ((int32_t)lcd_encoder == 2)
-		{
-			lcd_print_stop();
-			SERIAL_PROTOCOLPGM("//action:cancel");
-			SERIAL_PROTOCOLLN("");
-		}
-	}
+	SERIAL_ECHOLNPGM("// action:cancel");
 }
 void lcd_sdcard_stop()
 {
