@@ -6995,6 +6995,25 @@ if((eSoundMode==e_SOUND_MODE_LOUD)||(eSoundMode==e_SOUND_MODE_ONCE))
       gcode_LastN = Stopped_gcode_LastN;
       FlushSerialRequestResend();
     break;
+
+	case 1000: //get eepropm babysteps and print
+		int custom_babystepMem;
+		EEPROM_read_B(EEPROM_BABYSTEP_Z, &custom_babystepMem);
+		MYSERIAL.print("Current Live Z: ");
+		MYSERIAL.println(custom_babystepMem/cs.axis_steps_per_unit[Z_AXIS],3); //print babysteps in mm
+		break;
+
+	case 1001:
+		float babysteppers_z_custom;
+		if (code_seen('Z')) babysteppers_z_custom = code_value(); //from mm
+		int storeBBsteps = floor(cs.axis_steps_per_unit[Z_AXIS]*babysteppers_z_custom); // round down
+		MYSERIAL.print("Live Z set in STEPS: ");
+		MYSERIAL.println(storeBBsteps);
+		MYSERIAL.print("Live Z as MM: ");
+		MYSERIAL.println(babysteppers_z_custom,3);
+		EEPROM_save_B(EEPROM_BABYSTEP_Z, &storeBBsteps);
+		break;
+
 	default: 
 		printf_P(PSTR("Unknown M code: %s \n"), cmdbuffer + bufindr + CMDHDRSIZE);
     }
