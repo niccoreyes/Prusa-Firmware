@@ -7005,8 +7005,9 @@ if((eSoundMode==e_SOUND_MODE_LOUD)||(eSoundMode==e_SOUND_MODE_ONCE))
 
 	case 1001:
 		float babysteppers_z_custom;
+		int storeBBsteps;
 		if (code_seen('Z')) babysteppers_z_custom = code_value(); //from mm
-		int storeBBsteps = floor(cs.axis_steps_per_unit[Z_AXIS]*babysteppers_z_custom); // round down
+		storeBBsteps = floor(cs.axis_steps_per_unit[Z_AXIS]*babysteppers_z_custom); // round down
 		MYSERIAL.print("Live Z set in STEPS: ");
 		MYSERIAL.println(storeBBsteps);
 		MYSERIAL.print("Live Z as MM: ");
