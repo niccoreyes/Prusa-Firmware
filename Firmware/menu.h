@@ -28,6 +28,27 @@ extern uint8_t menu_data[MENU_DATA_SIZE];
 
 extern uint8_t menu_depth;
 
+//! definition of serious errors possibly blocking the main menu
+//! Use them as bit mask, so that the code may set various errors at the same time
+enum ESeriousErrors {
+	SERIOUS_ERR_NONE            = 0,
+	SERIOUS_ERR_MINTEMP_HEATER  = 0x01,
+	SERIOUS_ERR_MINTEMP_BED     = 0x02
+}; // and possibly others in the future.
+
+//! this is a flag for disabling entering the main menu. If this is set
+//! to anything != 0, the only the main status screen will be shown on the
+//! LCD and the user will be prevented from entering the menu.
+//! Now used only to block doing anything with the printer when there is
+//! the infamous MINTEMP error (SERIOUS_ERR_MINTEMP).
+extern uint8_t menu_block_entering_on_serious_errors;
+
+//! a pair of macros for manipulating the serious errors
+//! a c++ class would have been better
+#define menu_set_serious_error(x) menu_block_entering_on_serious_errors |= x;
+#define menu_unset_serious_error(x) menu_block_entering_on_serious_errors &= ~x;
+#define menu_is_serious_error(x) (menu_block_entering_on_serious_errors & x) != 0
+
 extern uint8_t menu_line;
 extern uint8_t menu_item;
 extern uint8_t menu_row;
@@ -100,11 +121,10 @@ extern const char menu_fmt_float31[];
 extern const char menu_fmt_float13[];
 
 
-extern void menu_draw_float31(const char* str, float val); //original
-//extern void menu_draw_float31(char chr, const char* str, float val); //old
+extern void menu_draw_float31(const char* str, float val);
 
-//extern void menu_draw_float13(const char* str, float val);
-extern void menu_draw_float13(char chr, const char* str, float val);
+extern void menu_draw_float13(const char* str, float val);
+
 
 #define MENU_ITEM_EDIT_int3_P(str, pval, minval, maxval) do { if (menu_item_edit_P(str, pval, minval, maxval)) return; } while (0)
 //#define MENU_ITEM_EDIT_int3_P(str, pval, minval, maxval) MENU_ITEM_EDIT(int3, str, pval, minval, maxval)

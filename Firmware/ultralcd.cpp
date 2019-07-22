@@ -42,6 +42,8 @@
 #include "io_atmega2560.h"
 
 bool lcd_variable_v2_cal_ispla = true;
+
+
 int scrollstuff = 0;
 char longFilenameOLD[LONG_FILENAME_LENGTH];
 
@@ -252,6 +254,7 @@ static void lcd_send_status();
 static void lcd_connect_printer();
 #endif //FARM_CONNECT_MESSAGE
 
+//! Beware: has side effects - forces lcd_draw_update to 2, which means clear the display
 void lcd_finishstatus();
 
 static void lcd_sdcard_menu();
@@ -1018,7 +1021,10 @@ static void lcd_status_screen()
 		}
 	}
 
-	if (current_click && (lcd_commands_type != LCD_COMMAND_STOP_PRINT)) //click is aborted unless stop print finishes
+	if (current_click
+		&& (lcd_commands_type != LCD_COMMAND_STOP_PRINT) //click is aborted unless stop print finishes
+		&& ( menu_block_entering_on_serious_errors == SERIOUS_ERR_NONE ) // or a serious error blocks entering the menu
+	)
 	{
 		menu_depth = 0; //redundant, as already done in lcd_return_to_status(), just to be sure
 		menu_submenu(lcd_main_menu);
@@ -1396,7 +1402,6 @@ void lcd_commands()
 				enquecommand_P(PSTR("M190 S" STRINGIFY(PLA_PREHEAT_HPB_TEMP)));
 				enquecommand_P(PSTR("M109 S" STRINGIFY(PLA_PREHEAT_HOTEND_TEMP)));
 			}
-			
 			enquecommand_P(_T(MSG_M117_V2_CALIBRATION));
 			enquecommand_P(PSTR("G28"));
 			enquecommand_P(PSTR("G92 E0.0"));
@@ -2223,12 +2228,12 @@ static void lcd_preheat_menu()
 	  MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
 	  MENU_ITEM_FUNCTION_P(PSTR("ABS    -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)), lcd_preheat_abs);
   } else {
-	  MENU_ITEM_FUNCTION_P(PSTR("CUSTOM  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)), lcd_preheat_pla);
-	  MENU_ITEM_FUNCTION_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)), lcd_preheat_abs);
+	  MENU_ITEM_FUNCTION_P(PSTR("PLA  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)), lcd_preheat_pla);
 	  MENU_ITEM_FUNCTION_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)), lcd_preheat_pet);
-	  MENU_ITEM_FUNCTION_P(PSTR("PLA -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)), lcd_preheat_hips);
-	  /*MENU_ITEM_FUNCTION_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)), lcd_preheat_pp);
-	  MENU_ITEM_FUNCTION_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)), lcd_preheat_flex);*/
+	  MENU_ITEM_FUNCTION_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)), lcd_preheat_abs);
+	  MENU_ITEM_FUNCTION_P(PSTR("HIPS -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)), lcd_preheat_hips);
+	  MENU_ITEM_FUNCTION_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)), lcd_preheat_pp);
+	  MENU_ITEM_FUNCTION_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)), lcd_preheat_flex);
 	  if (!wizard_active) MENU_ITEM_FUNCTION_P(_T(MSG_COOLDOWN), lcd_cooldown);
   }
   
@@ -2352,13 +2357,22 @@ void lcd_set_fan_check() {
 #ifdef MMU_HAS_CUTTER
 void lcd_cutter_enabled()
 {
-    if (1 == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
+    if (EEPROM_MMU_CUTTER_ENABLED_enabled == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
+    {
+#ifndef MMU_ALWAYS_CUT
+        eeprom_update_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED, 0);
+    }
+#else //MMU_ALWAYS_CUT
+        eeprom_update_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED, EEPROM_MMU_CUTTER_ENABLED_always);
+    }
+    else if (EEPROM_MMU_CUTTER_ENABLED_always == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
     {
         eeprom_update_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED, 0);
     }
+#endif //MMU_ALWAYS_CUT
     else
     {
-        eeprom_update_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED, 1);
+        eeprom_update_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED, EEPROM_MMU_CUTTER_ENABLED_enabled);
     }
 }
 #endif //MMU_HAS_CUTTER
@@ -2701,12 +2715,12 @@ void mFilamentMenu()
 {
 MENU_BEGIN();
 MENU_ITEM_FUNCTION_P(_T(MSG_MAIN),mFilamentBack);
-MENU_ITEM_SUBMENU_P(PSTR("CUSTOM  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)), mFilamentItem_PLA);
-MENU_ITEM_SUBMENU_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)),mFilamentItem_ABS);
+MENU_ITEM_SUBMENU_P(PSTR("PLA  -  " STRINGIFY(PLA_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PLA_PREHEAT_HPB_TEMP)),mFilamentItem_PLA);
 MENU_ITEM_SUBMENU_P(PSTR("PET  -  " STRINGIFY(PET_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PET_PREHEAT_HPB_TEMP)),mFilamentItem_PET);
-MENU_ITEM_SUBMENU_P(PSTR("PLA -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)),mFilamentItem_HIPS);
-/*MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),mFilamentItem_PP);
-MENU_ITEM_SUBMENU_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),mFilamentItem_FLEX);*/
+MENU_ITEM_SUBMENU_P(PSTR("ABS  -  " STRINGIFY(ABS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(ABS_PREHEAT_HPB_TEMP)),mFilamentItem_ABS);
+MENU_ITEM_SUBMENU_P(PSTR("HIPS -  " STRINGIFY(HIPS_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(HIPS_PREHEAT_HPB_TEMP)),mFilamentItem_HIPS);
+MENU_ITEM_SUBMENU_P(PSTR("PP   -  " STRINGIFY(PP_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(PP_PREHEAT_HPB_TEMP)),mFilamentItem_PP);
+MENU_ITEM_SUBMENU_P(PSTR("FLEX -  " STRINGIFY(FLEX_PREHEAT_HOTEND_TEMP) "/" STRINGIFY(FLEX_PREHEAT_HPB_TEMP)),mFilamentItem_FLEX);
 MENU_END();
 }
 
@@ -3318,8 +3332,7 @@ static void _lcd_babystep(int axis, const char *msg)
 	if (lcd_draw_update)
 	{
 	    lcd_set_cursor(0, 1);
-		//menu_draw_float13(msg, _md->babystepMemMM[axis]);
-		menu_draw_float13(' ', msg, _md->babystepMemMM[axis]);
+		menu_draw_float13(msg, _md->babystepMemMM[axis]);
 	}
 	if (LCD_CLICKED || menu_leaving)
 	{
@@ -3335,8 +3348,7 @@ static void _lcd_babystep(int axis, const char *msg)
 
 static void lcd_babystep_z()
 {
-	//_lcd_babystep(Z_AXIS, (_i("Adjusting Z: ")));////MSG_BABYSTEPPING_Z c=15 Beware: must include the ':' as its last character
-	_lcd_babystep(Z_AXIS, (_i("Adjusting Z")));////MSG_BABYSTEPPING_Z c=20
+	_lcd_babystep(Z_AXIS, (_i("Adjusting Z:")));////MSG_BABYSTEPPING_Z c=15 Beware: must include the ':' as its last character
 }
 
 
@@ -4879,19 +4891,16 @@ void lcd_v2_calibration()
 		bool loaded = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Is PLA filament loaded?"), false, true);////MSG_PLA_FILAMENT_LOADED c=20 r=2
 		if (loaded) {
 			lcd_commands_type = LCD_COMMAND_V2_CAL;
-			lcd_variable_v2_cal_ispla = true; //GIVE THE USER TO CHOOSE FILAMENT PREFERENCE
 		}
 		else {
-			/*lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
+			lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
 			lcd_consume_click();
 			for (int i = 0; i < 20; i++) { //wait max. 2s
 				delay_keep_alive(100);
 				if (lcd_clicked()) {
 					break;
 				}
-			}*/
-			lcd_commands_type = LCD_COMMAND_V2_CAL;
-			lcd_variable_v2_cal_ispla = false; //FILAMENT PREFERENCE
+			}
 		}
 	}
 	lcd_return_to_status();
@@ -5206,11 +5215,11 @@ void lcd_settings_linearity_correction_menu(void)
 #ifdef TMC2130_LINEARITY_CORRECTION_XYZ
 	//tmc2130_wave_fac[X_AXIS]
 
-	MENU_ITEM_EDIT_int3_P(_i("X-correct"),  &tmc2130_wave_fac[X_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=9
-	MENU_ITEM_EDIT_int3_P(_i("Y-correct"),  &tmc2130_wave_fac[Y_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=9
-	MENU_ITEM_EDIT_int3_P(_i("Z-correct"),  &tmc2130_wave_fac[Z_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=9
+	MENU_ITEM_EDIT_int3_P(_i("X-correct:"),  &tmc2130_wave_fac[X_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=10
+	MENU_ITEM_EDIT_int3_P(_i("Y-correct:"),  &tmc2130_wave_fac[Y_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=10
+	MENU_ITEM_EDIT_int3_P(_i("Z-correct:"),  &tmc2130_wave_fac[Z_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=10
 #endif //TMC2130_LINEARITY_CORRECTION_XYZ
-	MENU_ITEM_EDIT_int3_P(_i("E-correct"),  &tmc2130_wave_fac[E_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=9
+	MENU_ITEM_EDIT_int3_P(_i("E-correct:"),  &tmc2130_wave_fac[E_AXIS],  TMC2130_WAVE_FAC1000_MIN-TMC2130_WAVE_FAC1000_STP, TMC2130_WAVE_FAC1000_MAX);////MSG_EXTRUDER_CORRECTION c=10
 	MENU_END();
 }
 #endif // TMC2130
@@ -5298,10 +5307,16 @@ static bool settingsCutter()
 {
     if (mmu_enabled)
     {
-        if (1 == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
+        if (EEPROM_MMU_CUTTER_ENABLED_enabled == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
         {
             if (menu_item_function_P(_i("Cutter       [on]"), lcd_cutter_enabled)) return true;//// c=17 r=1
         }
+#ifdef MMU_ALWAYS_CUT
+        else if (EEPROM_MMU_CUTTER_ENABLED_always == eeprom_read_byte((uint8_t*)EEPROM_MMU_CUTTER_ENABLED))
+        {
+            if (menu_item_function_P(_i("Cutter   [always]"), lcd_cutter_enabled)) return true;//// c=17 r=1
+        }
+#endif
         else
         {
             if (menu_item_function_P(_i("Cutter      [off]"), lcd_cutter_enabled)) return true;//// c=17 r=1
@@ -5968,7 +5983,7 @@ static void fil_load_menu()
 
     if (mmu_enabled)
     {
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_LOAD_FILAMENT), '5', extr_adj, 3);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_LOAD_FILAMENT), '5', extr_adj, 4);
     }
     MENU_END();
 }
@@ -6039,11 +6054,11 @@ static void mmu_cut_filament_menu()
     {
         MENU_BEGIN();
         MENU_ITEM_BACK_P(_T(MSG_MAIN));
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_EJECT_FILAMENT), '1', mmu_cut_filament, 0);
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_EJECT_FILAMENT), '2', mmu_cut_filament, 1);
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_EJECT_FILAMENT), '3', mmu_cut_filament, 2);
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_EJECT_FILAMENT), '4', mmu_cut_filament, 3);
-        MENU_ITEM_FUNCTION_NR_P(_T(MSG_EJECT_FILAMENT), '5', mmu_cut_filament, 4);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_CUT_FILAMENT), '1', mmu_cut_filament, 0);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_CUT_FILAMENT), '2', mmu_cut_filament, 1);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_CUT_FILAMENT), '3', mmu_cut_filament, 2);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_CUT_FILAMENT), '4', mmu_cut_filament, 3);
+        MENU_ITEM_FUNCTION_NR_P(_T(MSG_CUT_FILAMENT), '5', mmu_cut_filament, 4);
         MENU_END();
     }
     else
@@ -6376,6 +6391,7 @@ static void lcd_test_menu()
 void lcd_resume_print()
 {
     lcd_return_to_status();
+		lcd_reset_alert_level();
     lcd_setstatuspgm(_T(MSG_RESUMING_PRINT));
     lcd_reset_alert_level(); //for fan speed error
     restore_print_from_ram_and_continue(0.0);
@@ -6459,9 +6475,8 @@ static void lcd_main_menu()
   {
 	MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);//8
   }
-
   if (moves_planned() || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL)) {
-	MENU_ITEM_FUNCTION_P(PSTR("OCTOPRINT Cancel"), lcd_octoprint_stop);  /// Cancel octoprint
+	  MENU_ITEM_FUNCTION_P(PSTR("OCTOPRINT Cancel"), lcd_octoprint_stop);  /// Cancel octoprint
   }
 
   if ( moves_planned() || IS_SD_PRINTING || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL))
@@ -6484,7 +6499,14 @@ static void lcd_main_menu()
 			}
 			else
 			{
-			    MENU_ITEM_SUBMENU_P(_i("Resume print"), lcd_resume_print);////MSG_RESUME_PRINT
+				#ifdef FANCHECK
+					checkFanSpeed(); //Check manually to get most recent fan speed status
+					if(fan_check_error == EFCE_OK)
+							MENU_ITEM_SUBMENU_P(_i("Resume print"), lcd_resume_print);////MSG_RESUME_PRINT
+				#else
+					MENU_ITEM_SUBMENU_P(_i("Resume print"), lcd_resume_print);////MSG_RESUME_PRINT
+				#endif
+
 			}
 			MENU_ITEM_SUBMENU_P(_T(MSG_STOP_PRINT), lcd_sdcard_stop);
 		}
@@ -8303,13 +8325,19 @@ void lcd_setstatus(const char* message)
   strncpy(lcd_status_message, message, LCD_WIDTH);
   lcd_finishstatus();
 }
+void lcd_updatestatuspgm(const char *message){
+	strncpy_P(lcd_status_message, message, LCD_WIDTH);
+	lcd_status_message[LCD_WIDTH] = 0;
+	lcd_finishstatus();
+	// hack lcd_draw_update to 1, i.e. without clear
+	lcd_draw_update = 1;
+}
+
 void lcd_setstatuspgm(const char* message)
 {
   if (lcd_status_message_level > 0)
     return;
-  strncpy_P(lcd_status_message, message, LCD_WIDTH);
-  lcd_status_message[LCD_WIDTH] = 0;
-  lcd_finishstatus();
+  lcd_updatestatuspgm(message);
 }
 void lcd_setalertstatuspgm(const char* message)
 {
