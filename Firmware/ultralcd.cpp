@@ -4891,16 +4891,19 @@ void lcd_v2_calibration()
 		bool loaded = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Is PLA filament loaded?"), false, true);////MSG_PLA_FILAMENT_LOADED c=20 r=2
 		if (loaded) {
 			lcd_commands_type = LCD_COMMAND_V2_CAL;
+			lcd_variable_v2_cal_ispla = true;
 		}
 		else {
-			lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
+			/*lcd_display_message_fullscreen_P(_i("Please load PLA filament first."));////MSG_PLEASE_LOAD_PLA c=20 r=4
 			lcd_consume_click();
 			for (int i = 0; i < 20; i++) { //wait max. 2s
 				delay_keep_alive(100);
 				if (lcd_clicked()) {
 					break;
 				}
-			}
+			}*/
+			lcd_commands_type = LCD_COMMAND_V2_CAL;
+			lcd_variable_v2_cal_ispla = false;
 		}
 	}
 	lcd_return_to_status();
