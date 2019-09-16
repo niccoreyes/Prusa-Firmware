@@ -852,8 +852,9 @@ static void check_if_fw_is_on_right_printer(){
     #ifdef IR_SENSOR
     swi2c_init();
     const uint8_t pat9125_detected = swi2c_readByte_A8(PAT9125_I2C_ADDR,0x00,NULL);
-      if (pat9125_detected){
-        lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));}
+      //if (pat9125_detected){
+        //lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));}
+	//I DON'T KNOW WHY THIS POPS UP WHEN I DIDN'T INSTALL THE OPTICAL FILAMENT SENSOR
     #endif //IR_SENSOR
 
     #ifdef PAT9125
@@ -7704,6 +7705,25 @@ Sigma_Exit:
       gcode_LastN = Stopped_gcode_LastN;
       FlushSerialRequestResend();
     break;
+
+	case 1000: //get eepropm babysteps and print
+		int custom_babystepMem;
+		EEPROM_read_B(EEPROM_BABYSTEP_Z, &custom_babystepMem);
+		MYSERIAL.print("Current Live Z: ");
+		MYSERIAL.println(custom_babystepMem / cs.axis_steps_per_unit[Z_AXIS], 3); //print babysteps in mm
+		break;
+
+	case 1001:
+		float babysteppers_z_custom;
+		int storeBBsteps;
+		if (code_seen('Z')) babysteppers_z_custom = code_value(); //from mm
+		storeBBsteps = floor(cs.axis_steps_per_unit[Z_AXIS] * babysteppers_z_custom); // round down
+		MYSERIAL.print("Live Z set in STEPS: ");
+		MYSERIAL.println(storeBBsteps);
+		MYSERIAL.print("Live Z as MM: ");
+		MYSERIAL.println(babysteppers_z_custom, 3);
+		EEPROM_save_B(EEPROM_BABYSTEP_Z, &storeBBsteps);
+		break;
 	default: 
 		printf_P(PSTR("Unknown M code: %s \n"), cmdbuffer + bufindr + CMDHDRSIZE);
     }

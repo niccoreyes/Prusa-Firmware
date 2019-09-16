@@ -6626,7 +6626,9 @@ static void lcd_main_menu()
   {
 	MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);//8
   }
-
+  if (moves_planned() || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL)) {
+	  MENU_ITEM_FUNCTION_P(PSTR("OCTOPRINT Cancel"), lcd_octoprint_stop);  /// Cancel octoprint
+  }
 
   if ( moves_planned() || IS_SD_PRINTING || is_usb_printing || (lcd_commands_type == LcdCommands::Layer1Cal))
   {
@@ -6760,6 +6762,8 @@ static void lcd_main_menu()
 	  MENU_ITEM_SUBMENU_P(_i("Fail stats MMU"), lcd_menu_fails_stats_mmu);
   }
   MENU_ITEM_SUBMENU_P(_i("Support"), lcd_support_menu);////MSG_SUPPORT
+
+  MENU_ITEM_FUNCTION_P(PSTR("OCTOPRINT OFF"), lcd_octoprint_off); //// Turn off octoprint
 #ifdef LCD_TEST
     MENU_ITEM_SUBMENU_P(_i("W25x20CL init"), lcd_test_menu);////MSG_SUPPORT
 #endif //LCD_TEST
@@ -7048,7 +7052,14 @@ void lcd_print_stop()
 	WRITE(FAN_PIN, 0);
 	fanSpeed = 0;
 }
-
+void lcd_octoprint_off() {
+	//SERIAL_ECHO_START;
+	SERIAL_PROTOCOLPGM("//action:poweroff");
+	SERIAL_PROTOCOLLN("");
+}
+void lcd_octoprint_stop() {
+	SERIAL_ECHOLNPGM("// action:cancel");
+}
 void lcd_sdcard_stop()
 {
 

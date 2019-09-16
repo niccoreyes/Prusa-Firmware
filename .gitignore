@@ -1,10 +1,12 @@
 .settings
 .project
 .cproject
+.vs
 Debug
 Firmware/Configuration_prusa.h
 Firmware/Doc
-/Firmware/.vs/Firmware/v14
+Firmware/Release
+Firmware/.vs/
 /Firmware/__vm
 /Firmware/Firmware.sln
 /Firmware/Firmware.vcxproj

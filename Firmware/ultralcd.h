@@ -37,6 +37,8 @@ void lcd_wait_interact();
 void lcd_loading_filament();
 void lcd_change_success();
 void lcd_loading_color();
+void lcd_octoprint_off();
+void lcd_octoprint_stop();
 void lcd_sdcard_stop();
 void lcd_pause_print();
 void lcd_resume_print();
