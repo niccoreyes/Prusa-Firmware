@@ -169,6 +169,7 @@ enum class FilamentAction : uint_least8_t
     MmuUnLoad,
     MmuEject,
     MmuCut,
+    Preheat,
 };
 
 extern FilamentAction eFilamentAction;
