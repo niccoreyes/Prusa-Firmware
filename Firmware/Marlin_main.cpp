@@ -853,7 +853,7 @@ static void check_if_fw_is_on_right_printer(){
     swi2c_init();
     const uint8_t pat9125_detected = swi2c_readByte_A8(PAT9125_I2C_ADDR,0x00,NULL);
       //if (pat9125_detected){
-        //lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));}
+      //  lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));}
 	//I DON'T KNOW WHY THIS POPS UP WHEN I DIDN'T INSTALL THE OPTICAL FILAMENT SENSOR
     #endif //IR_SENSOR
 

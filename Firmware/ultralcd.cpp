@@ -6450,7 +6450,7 @@ static void lcd_main_menu()
   {
 	MENU_ITEM_SUBMENU_P(_T(MSG_BABYSTEP_Z), lcd_babystep_z);//8
   }
-  if (moves_planned() || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL)) {
+  if (moves_planned() || is_usb_printing || (lcd_commands_type == LcdCommands::Layer1Cal)) {
 	  MENU_ITEM_FUNCTION_P(PSTR("OCTOPRINT Cancel"), lcd_octoprint_stop);  /// Cancel octoprint
   }
 
