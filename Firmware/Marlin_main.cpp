@@ -1530,7 +1530,7 @@ void setup()
 		  // Reset the babystepping values, so the printer will not move the Z axis up when the babystepping is enabled.
 		  eeprom_update_word((uint16_t*)EEPROM_BABYSTEP_Z, 0);
 		  // Show the message.
-		  lcd_show_fullscreen_message_and_wait_P(_T(MSG_FOLLOW_CALIBRATION_FLOW));
+		  //lcd_show_fullscreen_message_and_wait_P(_T(MSG_FOLLOW_CALIBRATION_FLOW));
 	  }
 	  else if (calibration_status() == CALIBRATION_STATUS_LIVE_ADJUST) {
 		  // Show the message.

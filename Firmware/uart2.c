@@ -81,4 +81,3 @@ ISR(USART2_RX_vect)
 		printf_P(PSTR("USART2 rx Full!!!\n"));
 	}
 }
-

@@ -1002,4 +1002,3 @@ void lcd_set_custom_characters_degree(void)
 {
 	lcd_createChar_P(1, lcd_chardata_degree);
 }
-

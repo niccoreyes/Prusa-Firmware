@@ -382,4 +382,3 @@ MarlinSerial MSerial;
 #if defined(AT90USB) && defined (BTENABLED)
    HardwareSerial bt;
 #endif
-

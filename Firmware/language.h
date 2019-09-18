@@ -148,4 +148,3 @@ extern void lang_boot_update_start(uint8_t lang);
 
 
 #endif //LANGUAGE_H
-

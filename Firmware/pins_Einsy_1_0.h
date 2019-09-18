@@ -155,4 +155,3 @@
 	/* Put data into buffer, sends the data */ \
 	LOGIC_ANALYZER_SERIAL_TX_WRITE_NC(C); \
 } while (0)
-
